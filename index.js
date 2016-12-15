@@ -211,14 +211,15 @@ const actions = {
 
 const getWeatherIn = (location) => {
   const ql = 'q=' + encodeURIComponent(location);
-  const apiKey = 'APPID' + encodeURIComponent(WEATHER_API_KEY);
+  const apiKey = 'APPID=' + encodeURIComponent(WEATHER_API_KEY);
   return fetch('http://api.openweathermap.org/data/2.5/weather?' + ql + apiKey)
   .then(response => {
     if (response.status === 401) {
       throw new Error('Open weather map api error');
     } else {
-      json = response.json();
-      weather = json.weather;
+      let json = response.json();
+      console.log(json);
+      let weather = json.weather;
       return weather.main;
     }
   });
