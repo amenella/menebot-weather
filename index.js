@@ -57,8 +57,6 @@ app.post('/webhook/', function (req, res) {
       // trying to access or create the stored session of the sender
       const sessionId = findOrCreateSession(senderId);
 
-      console.log('NEW SESSION ID: ' + sessionId);
-
       // run actions of the wit bot with the corresponding user's session
       wit.runActions(
         sessionId, // the user's current session
@@ -96,7 +94,7 @@ const fbMessage = (id, text) => {
     message: { text }
   });
   const qs = 'access_token=' + encodeURIComponent(FB_TOKEN);
-  return fetch('https://graph.facebook.com/me/messages?' + qs, {
+  return fetch('https://graph.facebook.com/v2.6/me/messages?' + qs, {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body,
