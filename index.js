@@ -67,13 +67,6 @@ app.post('/webhook/', function (req, res) {
         // Now it's waiting for further messages to proceed.
         console.log('Waiting for next user messages');
 
-        // Based on the session state, you might want to reset the session.
-        // This depends heavily on the business logic of your bot.
-        // Example:
-        // if (context['done']) {
-        //   delete sessions[sessionId];
-        // }
-
         // Updating the user's current session state
         sessions[sessionId].context = context;
       })
@@ -85,28 +78,6 @@ app.post('/webhook/', function (req, res) {
   }
   res.sendStatus(200);
 });
-
-/*
-// fucntion to send back response from bot
-function sendTextMessage (sender, text) {
-  let messageData = { text: text };
-  request({
-    url: 'https://graph.facebook.com/v2.6/me/messages',
-    qs: {access_token: FB_TOKEN},
-    method: 'POST',
-    json: {
-      recipient: {id: sender},
-      message: messageData
-    }
-  }, function (error, response, body) {
-    if (error) {
-      console.log('Error sending messages: ', error);
-    } else if (response.body.error) {
-      console.log('Error: ', response.body.error);
-    }
-  });
-}
-*/
 
 /*************************************************************************/
 // Messenger API
@@ -140,7 +111,6 @@ const sessions = {};
 
 const findOrCreateSession = (fbid) => {
   let sessionId;
-  // Let's see if we already have a session for the user fbid
   // check if we already stored a session for the user which facebook id is fbid
   Object.keys(sessions).forEach(k => {
     if (sessions[k].fbid === fbid) {
