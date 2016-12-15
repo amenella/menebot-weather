@@ -67,6 +67,11 @@ app.post('/webhook/', function (req, res) {
         // Now it's waiting for further messages to proceed.
         console.log('Waiting for next user messages');
 
+        // When the context of the bot is done, wipe it
+        if (context['done']) {
+          delete sessions[sessionId];
+        }
+
         // Updating the user's current session state
         sessions[sessionId].context = context;
       })
