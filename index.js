@@ -195,33 +195,35 @@ const actions = {
   },
   getForecast ({context, entities}) {
     var location = firstEntityValue(entities, 'location');
+    let waitForWeatherApi;
     if (location) {
-      let weather = getWeatherIn(location);
-      // TODO: check for returned value of weather
-
-      context.forecast = weather + ' in ' + location;
-      delete context.missingLocation;
+      waitForWeatherApi = getWeatherIn(location).then(response => {
+        let weather = response.weather[0].description;
+        context.forecast = weather + ' in ' + location;
+        delete context.missingLocation;
+      });
     } else {
       context.missingLocation = true;
       delete context.forecast;
+      waitForWeatherApi = Promise.resolve(undefined); // wait for nothing,
+                                            // create fulfilled promise
     }
-    return context;
+    return waitForWeatherApi.then(() => {
+        return context;
+    });
   }
 };
 
 const getWeatherIn = (location) => {
   const ql = 'q=' + encodeURIComponent(location);
   const apiKey = 'APPID=' + encodeURIComponent(WEATHER_API_KEY);
-  return fetch('http://api.openweathermap.org/data/2.5/weather?' + apiKey + '&'+ ql)
-  .then(response => {
-    if (response.status === 401) {
-      throw new Error('Open weather map api error');
-    } else {
-      let json = response.json();
-      console.log(json);
-      let weather = json.weather;
-      return weather.main;
+  return fetch('http://api.openweathermap.org/data/2.5/weather?' + apiKey + '&' + ql)
+  .then(rsp => rsp.json())
+  .then(json => {
+    if (json.error && json.error.message) {
+      throw new Error(json.error.message);
     }
+    return json;
   });
 };
 
