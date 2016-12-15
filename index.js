@@ -212,7 +212,7 @@ const actions = {
 const getWeatherIn = (location) => {
   const ql = 'q=' + encodeURIComponent(location);
   const apiKey = 'APPID=' + encodeURIComponent(WEATHER_API_KEY);
-  return fetch('http://api.openweathermap.org/data/2.5/weather?' + ql + apiKey)
+  return fetch('http://api.openweathermap.org/data/2.5/weather?' + apiKey + '&'+ ql)
   .then(response => {
     if (response.status === 401) {
       throw new Error('Open weather map api error');
