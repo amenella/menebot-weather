@@ -3,11 +3,15 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const request = require('request');
+
+let Wit = require('node-wit').Wit;
+let log = require('node-wit').log;
+
 const app = express();
 
 // facebook page access token for the bot
 // https://www.facebook.com/Menebot-weather-214420989014876
-const token = process.env.FB_PAGE_ACCESS_TOKEN;
+const FB_TOKEN = process.env.FB_PAGE_ACCESS_TOKEN;
 
 app.set('port', (process.env.PORT || 5000));
 
@@ -55,7 +59,7 @@ function sendTextMessage (sender, text) {
   let messageData = { text: text };
   request({
     url: 'https://graph.facebook.com/v2.6/me/messages',
-    qs: {access_token: token},
+    qs: {access_token: FB_TOKEN},
     method: 'POST',
     json: {
       recipient: {id: sender},
@@ -69,3 +73,43 @@ function sendTextMessage (sender, text) {
     }
   });
 }
+
+const firstEntityValue = (entities, entity) => {
+  const val = entities && entities[entity] &&
+    Array.isArray(entities[entity]) &&
+    entities[entity].length > 0 &&
+    entities[entity][0].value
+  ;
+  if (!val) {
+    return null;
+  }
+  return typeof val === 'object' ? val.value : val;
+};
+
+const actions = {
+  send (request, response) {
+    const {sessionId, context, entities} = request;
+    const {text, quickreplies} = response;
+    // console.log('sending...', JSON.stringify(response));
+  },
+  getForecast ({context, entities}) {
+    var location = firstEntityValue(entities, 'location');
+    if (location) {
+      context.forecast = 'sunny in ' + location; // we should call a weather API here
+      delete context.missingLocation;
+    } else {
+      context.missingLocation = true;
+      delete context.forecast;
+    }
+    return context;
+  }
+};
+
+const WIT_TOKEN = process.env.WIT_BOT_WEATHER_TOKEN;
+
+// Setting up our bot
+const wit = new Wit({
+  accessToken: WIT_TOKEN,
+  actions,
+  logger: new log.Logger(log.INFO)
+});
