@@ -57,6 +57,8 @@ app.post('/webhook/', function (req, res) {
       // trying to access or create the stored session of the sender
       const sessionId = findOrCreateSession(senderId);
 
+      console.log('NEW SESSION ID: ' + sessionId);
+
       // run actions of the wit bot with the corresponding user's session
       wit.runActions(
         sessionId, // the user's current session
@@ -67,10 +69,10 @@ app.post('/webhook/', function (req, res) {
         // Now it's waiting for further messages to proceed.
         console.log('Waiting for next user messages');
 
-        // When the context of the bot is done, wipe it
-        if (context['done']) {
-          delete sessions[sessionId];
-        }
+        // // When the context of the bot is done, wipe it
+        // if (context['done']) {
+        //   delete sessions[sessionId];
+        // }
 
         // Updating the user's current session state
         sessions[sessionId].context = context;
