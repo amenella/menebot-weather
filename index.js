@@ -12,6 +12,9 @@ let log = require('node-wit').log;
 const FB_TOKEN = process.env.FB_PAGE_ACCESS_TOKEN;
 const WIT_TOKEN = process.env.WIT_BOT_WEATHER_TOKEN;
 
+// api key
+const WEATHER_API_KEY = process.env.OPEN_WEATHER_MAP_API_KEY;
+
 const app = express();
 
 app.set('port', (process.env.PORT || 5000));
@@ -193,7 +196,10 @@ const actions = {
   getForecast ({context, entities}) {
     var location = firstEntityValue(entities, 'location');
     if (location) {
-      context.forecast = 'sunny in ' + location; // we should call a weather API here
+      let weather = getWeatherIn(location);
+      // TODO: check for returned value of weather
+
+      context.forecast = weather + ' in ' + location;
       delete context.missingLocation;
     } else {
       context.missingLocation = true;
@@ -201,6 +207,21 @@ const actions = {
     }
     return context;
   }
+};
+
+const getWeatherIn = (location) => {
+  const ql = 'q=' + encodeURIComponent(location);
+  const apiKey = 'APPID' + encodeURIComponent(WEATHER_API_KEY);
+  return fetch('http://api.openweathermap.org/data/2.5/weather?' + ql + apiKey)
+  .then(response => {
+    if (response.status === 401) {
+      throw new Error('Open weather map api error');
+    } else {
+      json = response.json();
+      weather = json.weather;
+      return weather.main;
+    }
+  });
 };
 
 // Setting up our bot
