@@ -25,5 +25,8 @@
   "bugs": {
     "url": "https://github.com/amenella/menebot-weather/issues"
   },
-  "homepage": "https://github.com/amenella/menebot-weather#readme"
+  "homepage": "https://github.com/amenella/menebot-weather#readme",
+  "devDependencies": {
+    "flow-bin": "^0.37.0"
+  }
 }

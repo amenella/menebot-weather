@@ -1,3 +1,4 @@
+/* @flow weak */
 'use strict';
 
 // dependencies
@@ -9,11 +10,11 @@ let Wit = require('node-wit').Wit;
 let log = require('node-wit').log;
 
 // tokens
-const FB_TOKEN = process.env.FB_PAGE_ACCESS_TOKEN;
-const WIT_TOKEN = process.env.WIT_BOT_WEATHER_TOKEN;
+const FB_TOKEN : ?string = process.env.FB_PAGE_ACCESS_TOKEN;
+const WIT_TOKEN : ?string = process.env.WIT_BOT_WEATHER_TOKEN;
 
 // api key
-const WEATHER_API_KEY = process.env.OPEN_WEATHER_MAP_API_KEY;
+const WEATHER_API_KEY : ?string = process.env.OPEN_WEATHER_MAP_API_KEY;
 
 const app = express();
 
@@ -26,12 +27,12 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 // Index route
-app.get('/', function (req, res) {
+app.get('/', (req, res) => {
   res.send('Hello world, I am a chat bot');
 });
 
 // for Facebook verification
-app.get('/webhook/', function (req, res) {
+app.get('/webhook/', (req, res) => {
   if (req.query['hub.verify_token'] === 'my_personal_token') {
     res.send(req.query['hub.challenge']);
   }
@@ -39,23 +40,23 @@ app.get('/webhook/', function (req, res) {
 });
 
 // Spin up the server
-app.listen(app.get('port'), function () {
+app.listen(app.get('port'), () => {
   console.log('running on port', app.get('port'));
 });
 
 // Process received messages on messenger bot from a FB user
-app.post('/webhook/', function (req, res) {
-  let messagingEvents = req.body.entry[0].messaging;
+app.post('/webhook/', (req, res) => {
+  let messagingEvents : string = req.body.entry[0].messaging;
   for (let i = 0; i < messagingEvents.length; i++) {
     let event = req.body.entry[0].messaging[i];
-    let senderId = event.sender.id;
+    let senderId : string = event.sender.id;
     if (event.message && event.message.text) {
       // our messenger bot received a text message
-      let text = event.message.text;
+      let text : string = event.message.text;
       // sendTextMessage(sender, 'Text received, echo: ' + text.substring(0, 200));
 
       // trying to access or create the stored session of the sender
-      const sessionId = findOrCreateSession(senderId);
+      const sessionId : string = findOrCreateSession(senderId);
 
       // run actions of the wit bot with the corresponding user's session
       wit.runActions(
@@ -88,12 +89,12 @@ app.post('/webhook/', function (req, res) {
 // Messenger API
 
 // fucntion to send back an answer from messenger (FB)
-const fbMessage = (id, text) => {
+const fbMessage = (id : string, text : string) : Promise<any> => {
   const body = JSON.stringify({
     recipient: { id },
     message: { text }
   });
-  const qs = 'access_token=' + encodeURIComponent(FB_TOKEN);
+  const qs : string = 'access_token=' + encodeURIComponent(FB_TOKEN);
   return fetch('https://graph.facebook.com/v2.6/me/messages?' + qs, {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
@@ -114,8 +115,8 @@ const fbMessage = (id, text) => {
 // list of all user session ids
 const sessions = {};
 
-const findOrCreateSession = (fbid) => {
-  let sessionId;
+const findOrCreateSession = (fbid : string) : string => {
+  let sessionId : string;
   // check if we already stored a session for the user which facebook id is fbid
   Object.keys(sessions).forEach(k => {
     if (sessions[k].fbid === fbid) {
@@ -132,7 +133,7 @@ const findOrCreateSession = (fbid) => {
   return sessionId;
 };
 
-const firstEntityValue = (entities, entity) => {
+const firstEntityValue = (entities: {[id:string]: Object}, entity:string) : any => {
   const val = entities && entities[entity] &&
     Array.isArray(entities[entity]) &&
     entities[entity].length > 0 &&
@@ -148,7 +149,7 @@ const actions = {
   send ({sessionId}, {text}) {
 
     // trying to get the session id of the user we're talking to
-    const recipientId = sessions[sessionId].fbid;
+    const recipientId : string = sessions[sessionId].fbid;
     if (recipientId) {
       // we found the session of the current user (the recipient)
       // we're sending back the answer from our wit bot to the recipient on FB
@@ -169,13 +170,16 @@ const actions = {
     }
   },
   getForecast ({context, entities}) {
-    var location = firstEntityValue(entities, 'location');
-    let waitForWeatherApi;
+    var location : string = firstEntityValue(entities, 'location');
+    let waitForWeatherApi : Promise<any>;
     if (location) {
       waitForWeatherApi = getWeatherIn(location).then(response => {
-        let weather = response.weather[0].description;
-        context.forecast = weather + ' in ' + location;
-        delete context.missingLocation;
+        if (response.cod===200) {
+          let weather : string = response.weather[0].description;
+          let cityName : string = response.name;
+          context.forecast = weather + ' in ' + cityName;
+          delete context.missingLocation;
+        }
       });
     } else {
       context.missingLocation = true;
@@ -189,9 +193,10 @@ const actions = {
   }
 };
 
-const getWeatherIn = (location) => {
-  const ql = 'q=' + encodeURIComponent(location);
-  const apiKey = 'APPID=' + encodeURIComponent(WEATHER_API_KEY);
+// function which we call the weather api
+const getWeatherIn = (location : string) : Promise<any> => {
+  const ql : string = 'q=' + encodeURIComponent(location);
+  const apiKey : string = 'APPID=' + encodeURIComponent(WEATHER_API_KEY);
   return fetch('http://api.openweathermap.org/data/2.5/weather?' + apiKey + '&' + ql)
   .then(rsp => rsp.json())
   .then(json => {
