@@ -10,11 +10,11 @@ let Wit = require('node-wit').Wit;
 let log = require('node-wit').log;
 
 // tokens
-const FB_TOKEN : ?string = process.env.FB_PAGE_ACCESS_TOKEN;
-const WIT_TOKEN : ?string = process.env.WIT_BOT_WEATHER_TOKEN;
+const FB_TOKEN : any = process.env.FB_PAGE_ACCESS_TOKEN;
+const WIT_TOKEN : any = process.env.WIT_BOT_WEATHER_TOKEN;
 
 // api key
-const WEATHER_API_KEY : ?string = process.env.OPEN_WEATHER_MAP_API_KEY;
+const WEATHER_API_KEY : any = process.env.OPEN_WEATHER_MAP_API_KEY;
 
 const app = express();
 

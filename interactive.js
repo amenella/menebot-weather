@@ -10,7 +10,9 @@ let interactive = require('node-wit').interactive;
 const WIT_TOKEN : ?string = process.env.WIT_BOT_WEATHER_TOKEN;
 
 // api key
-const WEATHER_API_KEY : ?string = process.env.OPEN_WEATHER_MAP_API_KEY;
+const WEATHER_API_KEY : any = process.env.OPEN_WEATHER_MAP_API_KEY;
+
+
 
 const firstEntityValue = (entities: {[id:string]: Object}, entity:string) : any => {
   const val = entities && entities[entity] &&
